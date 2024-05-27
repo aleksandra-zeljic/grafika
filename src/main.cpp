@@ -171,6 +171,7 @@ int main() {
     Shader ourShader("resources/shaders/lighting.vs", "resources/shaders/lighting.fs");
     Shader skyboxShader("resources/shaders/skybox.vs", "resources/shaders/skybox.fs");
 
+    //skybox
     float skyboxVertices[] = {
             // aPos
             -1.0f,  1.0f, -1.0f,
@@ -238,11 +239,20 @@ int main() {
     unsigned int skyboxTexture = loadCubemap(faces);
 
     skyboxShader.use();
-    skyboxShader.setInt("skybox1",0);
+    skyboxShader.setInt("skybox",0);
     // load models
     // -----------
-    Model ourModel("resources/objects/backpack/backpack.obj");
-    ourModel.SetShaderTextureNamePrefix("material.");
+//    Model ourModel("resources/objects/backpack/backpack.obj");
+//    ourModel.SetShaderTextureNamePrefix("material.");
+
+//    Model maliPrincModel("resources/objects/little_prince/source/test/modelLittlePrince.obj");
+//    maliPrincModel.SetShaderTextureNamePrefix("material.");
+
+    Model tulipModel("resources/objects/tulip_flower/tulip.obj");
+    tulipModel.SetShaderTextureNamePrefix("material.");
+
+    Model moonModel("resources/objects/moon/Moon 2K.obj");
+    moonModel.SetShaderTextureNamePrefix("material.");
 
     PointLight& pointLight = programState->pointLight;
     pointLight.position = glm::vec3(4.0f, 4.0, 0.0);
@@ -309,26 +319,54 @@ int main() {
         ourShader.setMat4("view", view);
 
         // render the loaded model
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model,
-                               programState->backpackPosition); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(programState->backpackScale));    // it's a bit too big for our scene, so scale it down
-        ourShader.setMat4("model", model);
-        ourModel.Draw(ourShader);
+//        glm::mat4 model = glm::mat4(1.0f);
+//        model = glm::translate(model,  glm::vec3(-5.0f, 5.0f, 1.0f));
+//        model = glm::scale(model, glm::vec3(glm::vec3(5.15f)));
+//        ourShader.setMat4("model", model);
+//        ourModel.Draw(ourShader);
 
+        // render mali princ
+//        glm::mat4 modelMaliPrinc = glm::mat4(1.0f);
+//        modelMaliPrinc = glm::translate(modelMaliPrinc, glm::vec3(20.0f, 80.0f, 30.0f));//0.0f,  19.0f, 9.0f));
+//        modelMaliPrinc = glm::rotate(modelMaliPrinc, 90.0f * 3.14159f / 90.0f, glm::vec3(1.0f, 1.0f, 1.0f));
+//        modelMaliPrinc = glm::rotate(modelMaliPrinc, 180.0f * 3.14159f / 180.0f , glm::vec3(1.0f, 1.0f, 1.0f));
+//        modelMaliPrinc = glm::scale(modelMaliPrinc, glm::vec3(glm::vec3(0.75f)));
+//        ourShader.setMat4("model", modelMaliPrinc);
+//        maliPrincModel.Draw(ourShader);
 
-        // draw skybox1
+        //render moon
+        glm::mat4 modelMoon= glm::mat4(1.0f);
+        modelMoon = glm::translate(modelMoon,glm::vec3(8.0f));
+        modelMoon = glm::scale(modelMoon, glm::vec3(8.25f));
+        //modelMoon = glm::rotate( modelMoon,glm::radians(90.0f), glm::vec3(1.0f,0.0f , 0.0f));
+        //modelMoon = glm::rotate(modelMoon,glm::radians(currentFrame*20), glm::vec3(0.0f ,1.0f, 0.0f));
+        //modelMoon = glm::rotate(modelMoon,glm::radians(currentFrame*40), glm::vec3(1.0f , 0.0f,0.0f));
+        ourShader.setMat4("model", modelMoon);
+        moonModel.Draw(ourShader);
+
+        // render rose
+        glm::mat4 modelRouse = glm::mat4(1.0f);
+        modelRouse = glm::translate(modelRouse, glm::vec3(0.0f,  19.0f, 9.0f));
+//        modelRouse = glm::rotate(modelRouse, 90.0f * 3.14159f / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+        modelRouse = glm::rotate(modelRouse, 180.0f * 3.14159f / 180.0f , glm::vec3(0.0f, 1.0f, 1.0f));
+        modelRouse = glm::scale(modelRouse, glm::vec3(glm::vec3(0.37f)));
+        ourShader.setMat4("model", modelRouse);
+        tulipModel.Draw(ourShader);
+
+        // draw skybox
+//      glDepthMask(GL_FALSE);
         glDepthFunc(GL_LEQUAL);
         skyboxShader.use();
         view = glm::mat4(glm::mat3(programState->camera.GetViewMatrix()));
         skyboxShader.setMat4("view", view);
         skyboxShader.setMat4("projection", projection);
-        // skybox1 cube
+        // skybox cube
         glBindVertexArray(skyboxVAO);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
+//      glDepthMask(GL_TRUE);
         glDepthFunc(GL_LESS);
 
 
