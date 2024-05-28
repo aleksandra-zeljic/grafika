@@ -158,7 +158,6 @@ int main() {
     (void) io;
 
 
-
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330 core");
 
@@ -170,6 +169,7 @@ int main() {
     // -------------------------
     Shader ourShader("resources/shaders/lighting.vs", "resources/shaders/lighting.fs");
     Shader skyboxShader("resources/shaders/skybox.vs", "resources/shaders/skybox.fs");
+    Shader blendingShader("resources/shaders/blending.vs", "resources/shaders/blending.fs");
 
     //skybox
     float skyboxVertices[] = {
@@ -240,14 +240,32 @@ int main() {
 
     skyboxShader.use();
     skyboxShader.setInt("skybox",0);
+
+    float starVertices[] = {
+            0.0f, 0.0f,  0.905f, 0.0f,0.0f,
+            0.846f, 0.0f,  0.905f, 1.0f,0.0f,
+            0.0f, 0.0f, 0.0f, 0.0f,1.0f,
+
+            0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+            0.846f, 0.0f,  0.905f, 1.0f, 0.0f,
+            0.846f, 0.0f, 0.0f, 1.0f,1.0f
+    };
+
+    unsigned int starVAO,starVBO;
+    glGenVertexArrays(1, &starVAO);
+    glGenBuffers(1, &starVBO);
+    glBindVertexArray(starVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, starVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(starVertices), starVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)nullptr);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glBindVertexArray(0);
+
+    unsigned int starTexture = loadTexture("resources/textures/star.png");
+
     // load models
-    // -----------
-//    Model ourModel("resources/objects/backpack/backpack.obj");
-//    ourModel.SetShaderTextureNamePrefix("material.");
-
-//    Model maliPrincModel("resources/objects/little_prince/source/test/modelLittlePrince.obj");
-//    maliPrincModel.SetShaderTextureNamePrefix("material.");
-
     Model tulipModel("resources/objects/tulip_flower/tulip.obj");
     tulipModel.SetShaderTextureNamePrefix("material.");
 
@@ -261,18 +279,14 @@ int main() {
     pointLight.specular = glm::vec3(1.0);
 
     pointLight.constant = 1.0f;
-    pointLight.linear = 0.05f;
-    pointLight.quadratic = 0.003f;
+    pointLight.linear = 0.09f;
+    pointLight.quadratic = 0.032f;
 
     DirLight& dirLight = programState->dirLight;
-    dirLight.direction = glm::vec3(-0.2f, -1.0f, -0.3f);
-    dirLight.ambient = glm::vec3(1.0f, 1.0f, 1.0f);
-    dirLight.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
-    dirLight.specular = glm::vec3(1.0f, 1.0f, 1.0f);
-
-
-    // draw in wireframe
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    dirLight.direction = glm::vec3(0.2f, -1.0f, -0.2f);
+    dirLight.ambient = glm::vec3(1.0f);
+    dirLight.diffuse = glm::vec3(1.0f);
+    dirLight.specular = glm::vec3(1.0f);
 
     // render loop
     // -----------
@@ -286,7 +300,6 @@ int main() {
         // input
         // -----
         processInput(window);
-
 
         // render
         // ------
@@ -312,18 +325,10 @@ int main() {
         ourShader.setVec3("viewPosition", programState->camera.Position);
         ourShader.setFloat("material.shininess", 32.0f);
         // view/projection transformations
-        glm::mat4 projection = glm::perspective(glm::radians(programState->camera.Zoom),
-                                                (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(programState->camera.Zoom),(float) SCR_WIDTH / (float) SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = programState->camera.GetViewMatrix();
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
-
-        // render the loaded model
-//        glm::mat4 model = glm::mat4(1.0f);
-//        model = glm::translate(model,  glm::vec3(-5.0f, 5.0f, 1.0f));
-//        model = glm::scale(model, glm::vec3(glm::vec3(5.15f)));
-//        ourShader.setMat4("model", model);
-//        ourModel.Draw(ourShader);
 
         // render mali princ
 //        glm::mat4 modelMaliPrinc = glm::mat4(1.0f);
@@ -338,20 +343,35 @@ int main() {
         glm::mat4 modelMoon= glm::mat4(1.0f);
         modelMoon = glm::translate(modelMoon,glm::vec3(8.0f));
         modelMoon = glm::scale(modelMoon, glm::vec3(8.25f));
-        //modelMoon = glm::rotate( modelMoon,glm::radians(90.0f), glm::vec3(1.0f,0.0f , 0.0f));
-        //modelMoon = glm::rotate(modelMoon,glm::radians(currentFrame*20), glm::vec3(0.0f ,1.0f, 0.0f));
-        //modelMoon = glm::rotate(modelMoon,glm::radians(currentFrame*40), glm::vec3(1.0f , 0.0f,0.0f));
         ourShader.setMat4("model", modelMoon);
         moonModel.Draw(ourShader);
 
         // render rose
         glm::mat4 modelRouse = glm::mat4(1.0f);
         modelRouse = glm::translate(modelRouse, glm::vec3(0.0f,  19.0f, 9.0f));
-//        modelRouse = glm::rotate(modelRouse, 90.0f * 3.14159f / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
         modelRouse = glm::rotate(modelRouse, 180.0f * 3.14159f / 180.0f , glm::vec3(0.0f, 1.0f, 1.0f));
         modelRouse = glm::scale(modelRouse, glm::vec3(glm::vec3(0.37f)));
         ourShader.setMat4("model", modelRouse);
         tulipModel.Draw(ourShader);
+
+        //render star
+        glDisable(GL_CULL_FACE);
+        blendingShader.use();
+        blendingShader.setMat4("view", view);
+        blendingShader.setMat4("projection", projection);
+        glm::mat4 modelStar = glm::mat4(1.0f);
+        modelStar = glm::translate(modelStar,glm::vec3(40.0f,  9.0f, 9.0f));
+        modelStar = glm::rotate(modelStar, 180.0f * 3.14159f / 180.0f , glm::vec3(1.0f, 1.0f, 1.0f));
+        modelStar = glm::scale(modelStar, glm::vec3(55.70f));
+        blendingShader.setMat4("model",modelStar);
+        glBindTexture(GL_TEXTURE_2D,starTexture);
+        glBindVertexArray(starVAO);
+        glDrawArrays(GL_TRIANGLES,0,6);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
+        glFrontFace(GL_CW);
+
+
 
         // draw skybox
 //      glDepthMask(GL_FALSE);
