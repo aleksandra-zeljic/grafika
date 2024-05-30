@@ -165,6 +165,18 @@ int main() {
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
 
+    //blending
+    // -----------------------------
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    //Face cull
+    // -----------------------------
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+    glFrontFace(GL_CW);
+
+
     // build and compile shaders
     // -------------------------
     Shader ourShader("resources/shaders/lighting.vs", "resources/shaders/lighting.fs");
@@ -354,23 +366,6 @@ int main() {
         ourShader.setMat4("model", modelRouse);
         tulipModel.Draw(ourShader);
 
-        //render star
-        glDisable(GL_CULL_FACE);
-        blendingShader.use();
-        blendingShader.setMat4("view", view);
-        blendingShader.setMat4("projection", projection);
-        glm::mat4 modelStar = glm::mat4(1.0f);
-        modelStar = glm::translate(modelStar,glm::vec3(40.0f,  9.0f, 9.0f));
-        modelStar = glm::rotate(modelStar, 180.0f * 3.14159f / 180.0f , glm::vec3(1.0f, 1.0f, 1.0f));
-        modelStar = glm::scale(modelStar, glm::vec3(55.70f));
-        blendingShader.setMat4("model",modelStar);
-        glBindTexture(GL_TEXTURE_2D,starTexture);
-        glBindVertexArray(starVAO);
-        glDrawArrays(GL_TRIANGLES,0,6);
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_FRONT);
-        glFrontFace(GL_CW);
-
 
 
         // draw skybox
@@ -390,6 +385,23 @@ int main() {
         glDepthFunc(GL_LESS);
 
 
+
+        //render star
+        glDisable(GL_CULL_FACE);
+        blendingShader.use();
+        blendingShader.setMat4("view", view);
+        blendingShader.setMat4("projection", projection);
+        glm::mat4 modelStar = glm::mat4(1.0f);
+        modelStar = glm::translate(modelStar,glm::vec3(30.0f,  -15.0f, 10.0f));
+        modelStar = glm::rotate(modelStar, 180.0f * 3.14159f / 180.0f , glm::vec3(1.0f, 1.0f, 1.0f));
+        modelStar = glm::scale(modelStar, glm::vec3(60.70f));
+        blendingShader.setMat4("model",modelStar);
+        glBindTexture(GL_TEXTURE_2D,starTexture);
+        glBindVertexArray(starVAO);
+        glDrawArrays(GL_TRIANGLES,0,6);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
+        glFrontFace(GL_CW);
 
 
 
